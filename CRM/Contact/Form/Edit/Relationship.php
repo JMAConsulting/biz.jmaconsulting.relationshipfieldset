@@ -166,9 +166,9 @@ class CRM_Contact_Form_Edit_Relationship {
   public static function formRule($params, &$errors) {
     // check start and end date
     if (!empty($params['start_date']) && !empty($params['end_date'])) {
-      $start_date = CRM_Utils_Date::format(CRM_Utils_Array::value('start_date', $params));
-      $end_date = CRM_Utils_Date::format(CRM_Utils_Array::value('end_date', $params));
-      if ($start_date && $end_date && (int ) $end_date < (int ) $start_date) {
+      $start_date = strtotime($params['start_date']);
+      $end_date = strtotime($params['end_date']);
+      if ($start_date > $end_date) {
         $errors['end_date'] = ts('The relationship end date cannot be prior to the start date.');
       }
     }
