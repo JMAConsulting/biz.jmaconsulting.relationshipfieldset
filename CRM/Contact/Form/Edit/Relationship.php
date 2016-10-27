@@ -105,8 +105,7 @@ class CRM_Contact_Form_Edit_Relationship {
    */
   public static function postProcess($form) {
     // Store the submitted values in an array.
-    $name = $form->getVar('_name');
-    $submittedValues = $form->controller->exportValues($name);
+    $submittedValues = $form->_submitValues;
 
     $requiredValues = array(
       'is_permission_a_b',
@@ -121,8 +120,10 @@ class CRM_Contact_Form_Edit_Relationship {
       'relationship_note',
     );
     $params = array();
-    foreach ($requiredValues as $values) {
-      $params[$values] = CRM_Utils_Array::value($values, $submittedValues);
+    foreach ($submittedValues as $key => $values) {
+      if (in_array($key, $requiredValues) || CRM_Core_BAO_CustomField::getKeyID($key)) {
+        $params[$key] = $values;
+      }
     }
 
     // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
