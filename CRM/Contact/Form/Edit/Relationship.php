@@ -103,132 +103,46 @@ class CRM_Contact_Form_Edit_Relationship {
   /**
    * This function is called when the form is submitted.
    */
-  public function postProcess() {
+  public static function postProcess($form) {
     // Store the submitted values in an array.
-    $params = $this->controller->exportValues($this->_name);
+    $name = $form->getVar('_name');
+    $submittedValues = $form->controller->exportValues($name);
+
+    $requiredValues = array(
+      'is_permission_a_b',
+      'is_permission_b_a',
+      'relationship_type_id',
+      'related_contact_id',
+      'is_current_employer',
+      'start_date',
+      'end_date',
+      'is_active',
+      'description',
+      'relationship_note',
+    );
+    $params = array();
+    foreach ($requiredValues as $values) {
+      $params[$values] = CRM_Utils_Array::value($values, $submittedValues);
+    }
 
     // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
     $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, 0);
     $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, 0);
 
-    // action is taken depending upon the mode
-    if ($this->_action & CRM_Core_Action::DELETE) {
-      CRM_Contact_BAO_Relationship::del($this->_relationshipId);
-
-      // CRM-15881 UPDATES
-      // Since the line above nullifies the organization_name and employer_id fiels in the contact record, we need to reload all blocks to reflect this chage on the user interface.
-      $this->ajaxResponse['reloadBlocks'] = array('#crm-contactinfo-content');
-
-      return;
-    }
-
     $relationshipTypeParts = explode('_', $params['relationship_type_id']);
     $params['relationship_type_id'] = $relationshipTypeParts[0];
-    if (!$this->_rtype) {
-      // Do we need to wrap this in an if - when is rtype used & is relationship_type_id always set then?
-      $this->_rtype = $params['relationship_type_id'];
-    }
-    $params['contact_id_' .  $relationshipTypeParts[1]] = $this->_contactId;
+    $params['contact_id_' .  $relationshipTypeParts[1]] = $form->_contactId;
 
-    // Update mode (always single)
-    if ($this->_action & CRM_Core_Action::UPDATE) {
-      $update = TRUE;
-      $params['id'] = $this->_relationshipId;
-      $ids['relationship'] = $this->_relationshipId;
-      $relation = CRM_Contact_BAO_Relationship::getRelationshipByID($this->_relationshipId);
-      if ($relation->contact_id_a == $this->_contactId) {
-        // I couldn't replicate this path in testing. See below.
-        $params['contact_id_a'] = $this->_contactId;
-        $params['contact_id_b'] = array($params['related_contact_id']);
-        $outcome = CRM_Contact_BAO_Relationship::createMultiple($params, $relationshipTypeParts[1]);
-        $relationshipIds = $outcome['relationship_ids'];
-      }
-      else {
-        // The only reason we have changed this to use the api & not the above is that this was broken.
-        // Recommend extracting all of update into a function that uses the api
-        // and ensuring api / bao take care of 'other stuff' in this form
-        // the contact_id_a & b can't be changed on this form so don't really need setting.
-        $params['contact_id_b'] = $this->_contactId;
-        $params['contact_id_a'] = $params['related_contact_id'];
-        $result = civicrm_api3('relationship', 'create', $params);
-        $relationshipIds = array($result['id']);
-      }
-      $ids['contactTarget'] = ($relation->contact_id_a == $this->_contactId) ? $relation->contact_id_b : $relation->contact_id_a;
-
-      // @todo this belongs in the BAO.
-      if ($this->_isCurrentEmployer) {
-        // if relationship type changes, relationship is disabled, or "current employer" is unchecked,
-        // clear the current employer. CRM-3235.
-        $relChanged = $params['relationship_type_id'] != $this->_values['relationship_type_id'];
-        if (!$params['is_active'] || !$params['is_current_employer'] || $relChanged) {
-
-          // CRM-15881 UPDATES
-          // If not is_active then is_current_employer needs to be set false as well! Logically a contact cannot be a current employee of a disabled employer relationship.
-          // If this is not done, then the below process will go ahead and disable the organization_name and employer_id fields in the contact record (which is what is wanted) but then further down will be re-enabled becuase is_current_employer is not false, therefore undoing what was done correctly.
-          if (!$params['is_active']) {
-            $params['is_current_employer'] = FALSE;
-          }
-
-          CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer($this->_values['contact_id_a']);
-          // Refresh contact summary if in ajax mode
-          $this->ajaxResponse['reloadBlocks'] = array('#crm-contactinfo-content');
-        }
-      }
-      if (empty($outcome['saved']) && !empty($update)) {
-        $outcome['saved'] = $update;
-      }
-      $this->setMessage($outcome);
-    }
-    // Create mode (could be 1 or more relationships)
-    else {
-      $params['contact_id_' .  $relationshipTypeParts[2]] = explode(',', $params['related_contact_id']);
-      $outcome = CRM_Contact_BAO_Relationship::createMultiple($params, $relationshipTypeParts[1]);
-      $relationshipIds = $outcome['relationship_ids'];
-      if (empty($outcome['saved']) && !empty($update)) {
-        $outcome['saved'] = $update;
-      }
-      $this->setMessage($outcome);
-    }
-
-    // if this is called from case view,
-    //create an activity for case role removal.CRM-4480
-    // @todo this belongs in the BAO.
-    if ($this->_caseId) {
-      CRM_Case_BAO_Case::createCaseRoleActivity($this->_caseId, $relationshipIds, $params['contact_check'], $this->_contactId);
-    }
-
-    // Save notes
-    // @todo this belongs in the BAO.
-    if ($this->_action & CRM_Core_Action::UPDATE || $params['note']) {
-      foreach ($relationshipIds as $id) {
-        $noteParams = array(
-          'entity_id' => $id,
-          'entity_table' => 'civicrm_relationship',
-        );
-        $existing = civicrm_api3('note', 'get', $noteParams);
-        if (!empty($existing['id'])) {
-          $noteParams['id'] = $existing['id'];
-        }
-        $noteParams['note'] = $params['note'];
-        $noteParams['contact_id'] = $this->_contactId;
-        if (!empty($existing['id']) || $params['note']) {
-          $action = $params['note'] ? 'create' : 'delete';
-          civicrm_api3('note', $action, $noteParams);
-        }
-      }
-    }
+    $params['contact_id_' .  $relationshipTypeParts[2]] = explode(',', $params['related_contact_id']);
+    $outcome = CRM_Contact_BAO_Relationship::createMultiple($params, $relationshipTypeParts[1]);
+    $relationshipIds = $outcome['relationship_ids'];
 
     $params['relationship_ids'] = $relationshipIds;
 
-    // Refresh contact tabs which might have been affected
-    $this->ajaxResponse['updateTabs'] = array(
-      '#tab_member' => CRM_Contact_BAO_Contact::getCountComponent('membership', $this->_contactId),
-      '#tab_contribute' => CRM_Contact_BAO_Contact::getCountComponent('contribution', $this->_contactId),
-    );
-
     // Set current employee/employer relationship, CRM-3532
-    if ($params['is_current_employer'] && $this->_allRelationshipNames[$params['relationship_type_id']]["name_a_b"] ==
-    'Employee of') {
+    $allRelationshipNames = CRM_Core_PseudoConstant::relationshipType('name');
+    if ($params['is_current_employer'] && $allRelationshipNames[$params['relationship_type_id']]["name_a_b"] ==
+        'Employee of') {
       $employerParams = array();
       foreach ($relationshipIds as $id) {
         // Fixme this is dumb why do we have to look this up again?
@@ -237,8 +151,6 @@ class CRM_Contact_Form_Edit_Relationship {
       }
       // @todo this belongs in the BAO.
       CRM_Contact_BAO_Contact_Utils::setCurrentEmployer($employerParams);
-      // Refresh contact summary if in ajax mode
-      $this->ajaxResponse['reloadBlocks'] = array('#crm-contactinfo-content');
     }
   }
 

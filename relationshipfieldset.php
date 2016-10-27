@@ -148,3 +148,15 @@ function relationshipfieldset_civicrm_validateForm($formName, &$fields, &$files,
     CRM_Contact_Form_Edit_Relationship::formRule($fields, $errors);
   }
 }
+
+/**
+ * Implements hook_civicrm_postProcess().
+ *
+ * @param string $formName
+ * @param CRM_Core_Form $form
+ */
+function relationshipfieldset_civicrm_postProcess($formName, &$form) {
+  if ('CRM_Contact_Form_Contact' == $formName && ($form ->_action & CRM_Core_Action::ADD)) {
+    CRM_Contact_Form_Edit_Relationship::postProcess($form);
+  }
+}
