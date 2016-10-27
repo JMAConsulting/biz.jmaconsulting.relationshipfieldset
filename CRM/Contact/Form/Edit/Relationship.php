@@ -116,7 +116,9 @@ class CRM_Contact_Form_Edit_Relationship {
     // Store the submitted values in an array.
     $submitValues = $form->_submitValues;
     foreach ($submitValues['relationships'] as $params) {
-
+      if (empty($params['relationship_type_id'])) {
+        continue;
+      }
       // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
       $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, 0);
       $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, 0);
