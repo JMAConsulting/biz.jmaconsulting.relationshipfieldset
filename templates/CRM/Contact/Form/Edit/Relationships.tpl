@@ -51,6 +51,10 @@
           <td class="label">{$form.description.label}</td>
           <td>{$form.description.html}</td>
         </tr>
+        <tr class="crm-relationship-form-block-note">
+          <td class="label">{$form.relationship_note.label}</td>
+          <td>{$form.relationship_note.html}</td>
+        </tr>
         <tr class="crm-relationship-form-block-is_permission_a_b">
           {capture assign="contact_b"}{ts}selected contact(s){/ts}{/capture}
           {capture assign="display_name_a"}{ts}This new Contact{/ts}{/capture}

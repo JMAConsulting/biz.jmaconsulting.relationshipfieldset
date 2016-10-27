@@ -91,6 +91,8 @@ class CRM_Contact_Form_Edit_Relationship {
 
     $form->add('text', 'description', ts('Description'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Relationship', 'description'));
 
+    $form->applyFilter('__ALL__', 'trim');
+    $form->add('textarea', 'relationship_note', ts('Notes'), array('cols' => '60', 'rows' => '3'));
     $defaults = self::setDefaultValues();
     $form->setDefaults($defaults);
 
@@ -152,6 +154,19 @@ class CRM_Contact_Form_Edit_Relationship {
       }
       // @todo this belongs in the BAO.
       CRM_Contact_BAO_Contact_Utils::setCurrentEmployer($employerParams);
+    }
+
+    // Add Notes
+    if (!empty($params['relationship_note'])) {
+      foreach ($relationshipIds as $id) {
+        $noteParams = array(
+          'entity_id' => $id,
+          'entity_table' => 'civicrm_relationship',
+          'contact_id' => $form->_contactId,
+          'note' => $params['relationship_note'],
+        );
+        civicrm_api3('note', 'create', $noteParams);
+      }
     }
   }
 
