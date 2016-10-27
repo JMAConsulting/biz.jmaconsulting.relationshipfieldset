@@ -114,65 +114,48 @@ class CRM_Contact_Form_Edit_Relationship {
    */
   public static function postProcess($form) {
     // Store the submitted values in an array.
-    $submittedValues = $form->_submitValues;
+    $submitValues = $form->_submitValues;
+    foreach ($submitValues['relationships'] as $params) {
 
-    $requiredValues = array(
-      'is_permission_a_b',
-      'is_permission_b_a',
-      'relationship_type_id',
-      'related_contact_id',
-      'is_current_employer',
-      'start_date',
-      'end_date',
-      'is_active',
-      'description',
-      'relationship_note',
-    );
-    $params = array();
-    foreach ($submittedValues as $key => $values) {
-      if (in_array($key, $requiredValues) || CRM_Core_BAO_CustomField::getKeyID($key)) {
-        $params[$key] = $values;
+      // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
+      $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, 0);
+      $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, 0);
+
+      $relationshipTypeParts = explode('_', $params['relationship_type_id']);
+      $params['relationship_type_id'] = $relationshipTypeParts[0];
+      $params['contact_id_' .  $relationshipTypeParts[1]] = $form->_contactId;
+
+      $params['contact_id_' .  $relationshipTypeParts[2]] = explode(',', $params['related_contact_id']);
+      $outcome = CRM_Contact_BAO_Relationship::createMultiple($params, $relationshipTypeParts[1]);
+      $relationshipIds = $outcome['relationship_ids'];
+
+      $params['relationship_ids'] = $relationshipIds;
+
+      // Set current employee/employer relationship, CRM-3532
+      $allRelationshipNames = CRM_Core_PseudoConstant::relationshipType('name');
+      if ($params['is_current_employer'] && $allRelationshipNames[$params['relationship_type_id']]["name_a_b"] ==
+          'Employee of') {
+        $employerParams = array();
+        foreach ($relationshipIds as $id) {
+          // Fixme this is dumb why do we have to look this up again?
+          $rel = CRM_Contact_BAO_Relationship::getRelationshipByID($id);
+          $employerParams[$rel->contact_id_a] = $rel->contact_id_b;
+        }
+        // @todo this belongs in the BAO.
+        CRM_Contact_BAO_Contact_Utils::setCurrentEmployer($employerParams);
       }
-    }
 
-    // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
-    $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, 0);
-    $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, 0);
-
-    $relationshipTypeParts = explode('_', $params['relationship_type_id']);
-    $params['relationship_type_id'] = $relationshipTypeParts[0];
-    $params['contact_id_' .  $relationshipTypeParts[1]] = $form->_contactId;
-
-    $params['contact_id_' .  $relationshipTypeParts[2]] = explode(',', $params['related_contact_id']);
-    $outcome = CRM_Contact_BAO_Relationship::createMultiple($params, $relationshipTypeParts[1]);
-    $relationshipIds = $outcome['relationship_ids'];
-
-    $params['relationship_ids'] = $relationshipIds;
-
-    // Set current employee/employer relationship, CRM-3532
-    $allRelationshipNames = CRM_Core_PseudoConstant::relationshipType('name');
-    if ($params['is_current_employer'] && $allRelationshipNames[$params['relationship_type_id']]["name_a_b"] ==
-        'Employee of') {
-      $employerParams = array();
-      foreach ($relationshipIds as $id) {
-        // Fixme this is dumb why do we have to look this up again?
-        $rel = CRM_Contact_BAO_Relationship::getRelationshipByID($id);
-        $employerParams[$rel->contact_id_a] = $rel->contact_id_b;
-      }
-      // @todo this belongs in the BAO.
-      CRM_Contact_BAO_Contact_Utils::setCurrentEmployer($employerParams);
-    }
-
-    // Add Notes
-    if (!empty($params['relationship_note'])) {
-      foreach ($relationshipIds as $id) {
-        $noteParams = array(
-          'entity_id' => $id,
-          'entity_table' => 'civicrm_relationship',
-          'contact_id' => $form->_contactId,
-          'note' => $params['relationship_note'],
-        );
-        civicrm_api3('note', 'create', $noteParams);
+      // Add Notes
+      if (!empty($params['relationship_note'])) {
+        foreach ($relationshipIds as $id) {
+          $noteParams = array(
+            'entity_id' => $id,
+            'entity_table' => 'civicrm_relationship',
+            'contact_id' => $form->_contactId,
+            'note' => $params['relationship_note'],
+          );
+          civicrm_api3('note', 'create', $noteParams);
+        }
       }
     }
   }
