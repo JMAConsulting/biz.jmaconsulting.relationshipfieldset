@@ -72,13 +72,13 @@ class CRM_Contact_Form_Edit_Relationship {
       'relationship_type_id',
       ts('Relationship Type'),
       array('' => ts('- select -')) + $relationshipList,
-      TRUE,
+      FALSE,
       array('class' => 'crm-select2 huge')
     );
     $contactField = $form->addEntityRef('related_contact_id', ts('Contact(s)'), array(
         'multiple' => TRUE,
         'create' => TRUE,
-      ), TRUE);
+      ), FALSE);
 
     $form->add('advcheckbox', 'is_current_employer', $form->_contactType == 'Organization' ? ts('Current Employee') : ts('Current Employer'));
 
@@ -128,6 +128,9 @@ class CRM_Contact_Form_Edit_Relationship {
       }
     }
 
+    if (empty($params['relationship_type_id'])) {
+      return FALSE;
+    }
     // CRM-14612 - Don't use adv-checkbox as it interferes with the form js
     $params['is_permission_a_b'] = CRM_Utils_Array::value('is_permission_a_b', $params, 0);
     $params['is_permission_b_a'] = CRM_Utils_Array::value('is_permission_b_a', $params, 0);
@@ -181,6 +184,12 @@ class CRM_Contact_Form_Edit_Relationship {
    */
   public static function formRule($params, &$errors) {
     // check start and end date
+    if (empty($params['relationship_type_id'])) {
+      return FALSE;
+    }
+    if (empty($params['related_contact_id'])) {
+      $errors['related_contact_id'] = ts('Please Select Contact(s).');
+    }
     if (!empty($params['start_date']) && !empty($params['end_date'])) {
       $start_date = strtotime($params['start_date']);
       $end_date = strtotime($params['end_date']);
