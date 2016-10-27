@@ -48,7 +48,7 @@
           </tr>
           <tr class="crm-relationship-form-block-start_date">
             <td class="label">{$form.relationships.$relblockId.start_date.label}</td>
-            <td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}<span>{$form.relationships.$relblockId.end_date.label} {include file="CRM/common/jcalendar.tpl" elementName=end_date}</span><br />
+            <td>{include file="CRM/common/jcalendar.tpl" elementName=start_date blockId=$relblockId blockSection='relationships'}<span>{$form.relationships.$relblockId.end_date.label} {include file="CRM/common/jcalendar.tpl" elementName=end_date blockId=$relblockId blockSection='relationships'}</span><br />
               <span class="description">{ts}If this relationship has start and/or end dates, specify themss here.{/ts}</span></td>
           </tr>
           <tr class="crm-relationship-form-block-description">
