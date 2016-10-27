@@ -78,13 +78,13 @@ class CRM_Contact_Form_Edit_Relationship {
       "relationships[$blockId][relationship_type_id]",
       ts('Relationship Type'),
       array('' => ts('- select -')) + $relationshipList,
-      TRUE,
+      FALSE,
       array('class' => 'crm-select2 huge')
     );
     $contactField = $form->addEntityRef("relationships[$blockId][related_contact_id]", ts('Contact(s)'), array(
         'multiple' => TRUE,
         'create' => TRUE,
-      ), TRUE);
+      ), FALSE);
 
     $form->add('advcheckbox', "relationships[$blockId][is_current_employer]", $form->_contactType == 'Organization' ? ts('Current Employee') : ts('Current Employer'));
 
@@ -165,19 +165,27 @@ class CRM_Contact_Form_Edit_Relationship {
   /**
    * validation.
    *
-   * @param array $params
+   * @param array $submitValues
    *   (reference ) an assoc array of name/value pairs.
    *
    * @param array $errors
    *
    */
-  public static function formRule($params, &$errors) {
+  public static function formRule($submitValues, &$errors) {
     // check start and end date
-    if (!empty($params['start_date']) && !empty($params['end_date'])) {
-      $start_date = strtotime($params['start_date']);
-      $end_date = strtotime($params['end_date']);
-      if ($start_date > $end_date) {
-        $errors['end_date'] = ts('The relationship end date cannot be prior to the start date.');
+    foreach($submitValues['relationships'] as $key => $params) {
+      if (empty($params['relationship_type_id'])) {
+        continue;
+      }
+      if (empty($params['related_contact_id'])) {
+        $errors["relationships[$key][related_contact_id]"] = ts('Please Select Contact(s).');
+      }
+      if (!empty($params['start_date']) && !empty($params['end_date'])) {
+        $start_date = strtotime($params['start_date']);
+        $end_date = strtotime($params['end_date']);
+        if ($start_date > $end_date) {
+          $errors["relationships[$key][end_date]"] = ts('The relationship end date cannot be prior to the start date.');
+        }
       }
     }
   }
