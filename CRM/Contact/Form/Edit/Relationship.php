@@ -29,12 +29,16 @@
  * This class generates form components for relationship.
  */
 class CRM_Contact_Form_Edit_Relationship {
+
+  public static $_blockID = NULL;
+
   /**
    * Set default values for the form.
    */
   public static function setDefaultValues() {
     $defaults = array();
-    $defaults['is_active'] = $defaults['is_current_employer'] = 1;
+    $blockId = self::$_blockID;
+    $defaults["relationships[$blockId][is_active]"] = $defaults["relationships[$blockId][is_current_employer]"] = 1;
     return $defaults;
   }
 
@@ -43,6 +47,8 @@ class CRM_Contact_Form_Edit_Relationship {
    */
   public static function buildQuickForm(&$form) {
 
+    self::$_blockID = $blockId = ($form->get('Relationship_Block_Count')) ? $form->get('Relationship_Block_Count') : 1;
+  
     // Select list
     $relationshipList = CRM_Contact_BAO_Relationship::getContactRelationshipType(NULL, NULL, NULL, $form->_contactType, FALSE, 'label', TRUE, $form->_contactSubType);
 
@@ -69,37 +75,38 @@ class CRM_Contact_Form_Edit_Relationship {
 
     $form->add(
       'select',
-      'relationship_type_id',
+      "relationships[$blockId][relationship_type_id]",
       ts('Relationship Type'),
       array('' => ts('- select -')) + $relationshipList,
       TRUE,
       array('class' => 'crm-select2 huge')
     );
-    $contactField = $form->addEntityRef('related_contact_id', ts('Contact(s)'), array(
+    $contactField = $form->addEntityRef("relationships[$blockId][related_contact_id]", ts('Contact(s)'), array(
         'multiple' => TRUE,
         'create' => TRUE,
       ), TRUE);
 
-    $form->add('advcheckbox', 'is_current_employer', $form->_contactType == 'Organization' ? ts('Current Employee') : ts('Current Employer'));
+    $form->add('advcheckbox', "relationships[$blockId][is_current_employer]", $form->_contactType == 'Organization' ? ts('Current Employee') : ts('Current Employer'));
 
-    $form->addDate('start_date', ts('Start Date'), FALSE, array('formatType' => 'searchDate'));
-    $form->addDate('end_date', ts('End Date'), FALSE, array('formatType' => 'searchDate'));
+    $form->addDate("relationships[$blockId][start_date]", ts('Start Date'), FALSE, array('formatType' => 'searchDate'));
+    $form->addDate("relationships[$blockId][end_date]", ts('End Date'), FALSE, array('formatType' => 'searchDate'));
 
-    $form->add('advcheckbox', 'is_active', ts('Enabled?'));
-    $form->add('checkbox', 'is_permission_a_b');
-    $form->add('checkbox', 'is_permission_b_a');
+    $form->add('advcheckbox', "relationships[$blockId][is_active]", ts('Enabled?'));
+    $form->add('checkbox', "relationships[$blockId][is_permission_a_b]");
+    $form->add('checkbox', "relationships[$blockId][is_permission_b_a]");
 
-    $form->add('text', 'description', ts('Description'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Relationship', 'description'));
+    $form->add('text', "relationships[$blockId][description]", ts('Description'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Relationship', 'description'));
 
     $form->applyFilter('__ALL__', 'trim');
-    $form->add('textarea', 'relationship_note', ts('Notes'), array('cols' => '60', 'rows' => '3'));
+    $form->add('textarea', "relationships[$blockId][relationship_note]", ts('Notes'), array('cols' => '60', 'rows' => '3'));
     $defaults = self::setDefaultValues();
     $form->setDefaults($defaults);
 
     $editOptions = $form->getVar('_editOptions');
-    $editOptions['Relationships'] = ts('Relationships');
+    $editOptions['Relationship'] = ts('Relationships');
     $form->setVar('_editOptions', $editOptions);
     $form->assign('editOptions', $editOptions);
+    $form->assign('relblockId', $blockId);
   }
 
   /**

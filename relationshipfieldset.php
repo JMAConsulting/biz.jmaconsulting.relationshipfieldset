@@ -132,7 +132,10 @@ function relationshipfieldset_civicrm_alterSettingsFolders(&$metaDataFolders = N
  *
  */
 function relationshipfieldset_civicrm_buildForm($formName, &$form) {
-  if ('CRM_Contact_Form_Contact' == $formName && ($form ->_action & CRM_Core_Action::ADD)) {
+  if ('CRM_Contact_Form_Contact' == $formName
+    && ($form ->_action & CRM_Core_Action::ADD)
+    && empty($form ->_addBlockName)
+  ) {
     CRM_Contact_Form_Edit_Relationship::buildQuickForm($form);
   }
 }
@@ -144,7 +147,9 @@ function relationshipfieldset_civicrm_buildForm($formName, &$form) {
  *
  */
 function relationshipfieldset_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  if ('CRM_Contact_Form_Contact' == $formName && ($form ->_action & CRM_Core_Action::ADD)) {
+  if ('CRM_Contact_Form_Contact' == $formName
+    && ($form ->_action & CRM_Core_Action::ADD)
+  ) {
     CRM_Contact_Form_Edit_Relationship::formRule($fields, $errors);
   }
 }
