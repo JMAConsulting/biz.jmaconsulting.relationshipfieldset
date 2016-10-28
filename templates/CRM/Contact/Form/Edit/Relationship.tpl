@@ -80,7 +80,7 @@
             <td>{$form.relationships.$relblockId.is_active.html}</td>
           </tr>
         </table>
-        <div id="custom_group_0_1"></div>
+        <div id="custom_group_0_{$relblockId}"></div>
         <div class="spacer"></div>
         <div id="addMoreRelationship{$relblockId}" class="crm-add-address-wrapper">
       <a href="#" class="button" onclick="buildAdditionalBlocks( 'Relationship', '{$className}	' );return false;"><span><div class="icon ui-icon-circle-plus"></div>{ts}Another Relationship{/ts}</span></a>
@@ -136,7 +136,25 @@
         }
         // Show/hide employer field
         $('.crm-relationship-form-block-is_current_employer-{/literal}{$relblockId}{literal}', $form).toggle(rType === {/literal}'{$employmentRelationship}'{literal});
-	 CRM.buildCustomData('Relationship', rType, false, 0, 0, true);
+	CRM.buildCustomData('Relationship', rType, false, {/literal}{$relblockId}{literal}, 0, true);
+	var eleName = '';
+	var elementName = 'relationships[{/literal}{$relblockId}{literal}]';
+	var stringIndex;
+	$.each(['input', 'select', 'textarea'], function (index, value) {
+	  $("#custom_group_0_{/literal}{$relblockId}{literal} " + value).each(function () {
+	    eleName = $(this).attr('name');
+	    if ($(this).attr('type') == 'checkbox'
+              || ($(this).is('select') && eleName.indexOf("[") > -1)
+            ) {
+	      stringIndex = eleName.indexOf("[");
+	      eleName = '[' + eleName.slice(0, stringIndex) + ']' + eleName.slice(stringIndex);
+	    }
+	    else {
+	      eleName = '[' + eleName + ']';
+	    }
+	    $(this).attr('name', elementName + eleName);
+          });
+        });
       }
     }).change();
   });
