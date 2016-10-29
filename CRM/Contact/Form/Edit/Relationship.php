@@ -115,6 +115,7 @@ class CRM_Contact_Form_Edit_Relationship {
   public static function postProcess($form) {
     // Store the submitted values in an array.
     $submitValues = $form->_submitValues;
+    self::upload($form->_submitFiles, $submitValues);
     foreach ($submitValues['relationships'] as $params) {
       if (empty($params['relationship_type_id'])) {
         continue;
@@ -186,6 +187,38 @@ class CRM_Contact_Form_Edit_Relationship {
         if ($start_date > $end_date) {
           $errors["relationships[$key][end_date]"] = ts('The relationship end date cannot be prior to the start date.');
         }
+      }
+    }
+  }
+
+  /**
+   * Upload and move the file if valid to the uploaded directory.
+   * @param array $submitFiles
+   * @param array $data
+   *
+   */
+  public static function upload($submitFiles, &$data) {
+    $config = CRM_Core_Config::singleton();
+    $uploadDir = $config->customFileUploadDir;
+    $element = new HTML_QuickForm_file();
+    foreach ($submitFiles['relationships']['name'] as $blockID => $customField) {
+      foreach ($customField as $customFieldName => $fileName) {
+        if (empty($fileName)) {
+          continue;
+        }
+        $newName = CRM_Utils_File::makeFileName($fileName);
+        $element->_value['tmp_name'] = $submitFiles['relationships']['tmp_name'][$blockID][$customFieldName];
+        $status = $element->moveUploadedFile($uploadDir, $newName);
+        if (!$status) {
+          CRM_Core_Error::statusBounce(ts('We could not move the uploaded file %1 to the upload directory %2. Please verify that the \'Temporary Files\' setting points to a valid path which is writable by your web server.', array(
+            1 => $fileName,
+            2 => $uploadDir,
+          )));
+        }
+        $data['relationships'][$blockID][$customFieldName] = array(
+          'name' => $uploadDir . $newName,
+          'type' => $submitFiles['relationships']['type'][$blockID][$customFieldName],
+        );
       }
     }
   }
