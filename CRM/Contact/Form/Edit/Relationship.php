@@ -198,6 +198,9 @@ class CRM_Contact_Form_Edit_Relationship {
    *
    */
   public static function upload($submitFiles, &$data) {
+    if (empty($submitFiles['relationships'])) {
+      return;
+    }
     $config = CRM_Core_Config::singleton();
     $uploadDir = $config->customFileUploadDir;
     $element = new HTML_QuickForm_file();
