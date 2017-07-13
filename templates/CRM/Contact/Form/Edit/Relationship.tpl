@@ -139,7 +139,17 @@
 
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_a_b input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + source + '_' + target + ']');
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_b_a input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + target + '_' + source + ']');
-	var eleName = '';
+	CRM.buildCustomData('Relationship', rType, false, {/literal}{$relblockId}{literal}, 0, true);
+      }
+    }).change();
+    $( document ).ajaxComplete(function(event, xhr, settings) {
+      var str = settings.url;
+      var getVar = str.split("cgcount=");
+      var getVar = getVar[1].split("&");
+      if (str.indexOf("civicrm/custom?type=Relationship&subType=") >= 0
+        && (getVar[0]-1) == {/literal}{$relblockId}{literal}
+      ) {
+        var eleName = '';
 	var elementName = 'relationships[{/literal}{$relblockId}{literal}]';
 	var stringIndex;
 	$.each(['input', 'select', 'textarea'], function (index, value) {
@@ -158,7 +168,7 @@
           });
         });
       }
-    }).change();
+    });
   });
   {/literal}
 </script>
