@@ -139,7 +139,6 @@
 
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_a_b input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + source + '_' + target + ']');
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_b_a input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + target + '_' + source + ']');
-	CRM.buildCustomData('Relationship', rType, false, {/literal}{$relblockId}{literal}, 0, true);
 	var eleName = '';
 	var elementName = 'relationships[{/literal}{$relblockId}{literal}]';
 	var stringIndex;
