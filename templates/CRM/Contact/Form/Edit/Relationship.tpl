@@ -94,7 +94,7 @@
 {include file="CRM/common/customData.tpl" includeWysiwygEditor=TRUE}
 
 <script type="text/javascript">
-  {literal}
+{literal}
   CRM.$(function($) {
     var
       $form = $("form.{/literal}{$form.formClass}{literal}"),
@@ -139,36 +139,37 @@
 
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_a_b input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + source + '_' + target + ']');
         $('#Relationship_Block_{/literal}{$relblockId}{literal} .crm-relationship-form-block-is_permission_b_a input', $form).attr('name', 'relationships[{/literal}{$relblockId}{literal}][is_permission_' + target + '_' + source + ']');
-	CRM.buildCustomData('Relationship', rType, false, {/literal}{$relblockId}{literal}, 0, true);
+	      CRM.buildCustomData('Relationship', rType, false, {/literal}{$relblockId}{literal}, 0, true);
       }
     }).change();
-    $( document ).ajaxComplete(function(event, xhr, settings) {
+    $(document).ajaxComplete(function(event, xhr, settings) {
       var str = settings.url;
-      var getVar = str.split("cgcount=");
-      var getVar = getVar[1].split("&");
-      if (str.indexOf("civicrm/custom?type=Relationship&subType=") >= 0
-        && (getVar[0]-1) == {/literal}{$relblockId}{literal}
-      ) {
-        var eleName = '';
-	var elementName = 'relationships[{/literal}{$relblockId}{literal}]';
-	var stringIndex;
-	$.each(['input', 'select', 'textarea'], function (index, value) {
-	  $("#custom_group_0_{/literal}{$relblockId}{literal} " + value).each(function () {
-	    eleName = $(this).attr('name');
-	    if ($(this).attr('type') == 'checkbox'
-              || ($(this).is('select') && eleName.indexOf("[") > -1)
-            ) {
-	      stringIndex = eleName.indexOf("[");
-	      eleName = '[' + eleName.slice(0, stringIndex) + ']' + eleName.slice(stringIndex);
-	    }
-	    else {
-	      eleName = '[' + eleName + ']';
-	    }
-	    $(this).attr('name', elementName + eleName);
+      if (str.indexOf("civicrm/custom?type=Relationship&subType=") >= 0) {
+        var getVar = str.split("cgcount=");
+        console.log(getVar);
+        var getVar = getVar[1].split("&");
+        if ((getVar[0]-1) == {/literal}{$relblockId}{literal}) {
+          var eleName = '';
+	        var elementName = 'relationships[{/literal}{$relblockId}{literal}]';
+	        var stringIndex;
+	        $.each(['input', 'select', 'textarea'], function (index, value) {
+	          $("#custom_group_0_{/literal}{$relblockId}{literal} " + value).each(function () {
+	            eleName = $(this).attr('name');
+	            if ($(this).attr('type') == 'checkbox'
+                || ($(this).is('select') && eleName.indexOf("[") > -1)
+              ) {
+	              stringIndex = eleName.indexOf("[");
+	              eleName = '[' + eleName.slice(0, stringIndex) + ']' + eleName.slice(stringIndex);
+	            }
+	            else {
+	              eleName = '[' + eleName + ']';
+	            }
+	            $(this).attr('name', elementName + eleName);
+            });
           });
-        });
+        }
       }
     });
   });
-  {/literal}
+{/literal}
 </script>
