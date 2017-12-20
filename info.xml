@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extension key="biz.jmaconsulting.relationshipfieldset" type="module">
-  <downloadUrl>https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/archive/relationshipfieldset-4.7-1.0.zip</downloadUrl>
+  <downloadUrl>https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/archive/relationshipfieldset-1.0.zip</downloadUrl>
   <file>relationshipfieldset</file>
   <name>Relationship Fieldset</name>
   <description>This extension provides fieldset on new contact form for adding relationship(s).</description>
@@ -10,8 +10,8 @@
     <email>support@jmaconsulting.biz</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/blob/4.7/README.md</url>
-    <url desc="Documentation">https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/blob/4.7/README.md</url>
+    <url desc="Main Extension Page">https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/blob/master/README.md</url>
+    <url desc="Documentation">https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/blob/master/README.md</url>
     <url desc="Support">https://github.com/JMAConsulting/biz.jmaconsulting.relationshipfieldset/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
@@ -19,6 +19,7 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
+    <ver>4.6</ver>
     <ver>4.7</ver>
   </compatibility>
   <comments>Many thanks to Acorn Canada for sponsoring the development of this extension.</comments>
