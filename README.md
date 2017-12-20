@@ -4,7 +4,7 @@
 
 ## Overview
 
-This extension .
+This extension provides fieldset on new contact form for adding relationship(s).
 
 ## Installation
 
