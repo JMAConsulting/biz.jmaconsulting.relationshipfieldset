@@ -48,7 +48,7 @@ class CRM_Contact_Form_Edit_Relationship {
   public static function buildQuickForm(&$form) {
 
     self::$_blockID = $blockId = ($form->get('Relationship_Block_Count')) ? $form->get('Relationship_Block_Count') : 1;
-  
+
     // Select list
     $relationshipList = CRM_Contact_BAO_Relationship::getContactRelationshipType(NULL, NULL, NULL, $form->_contactType, FALSE, 'label', TRUE, $form->_contactSubType);
 
@@ -174,7 +174,7 @@ class CRM_Contact_Form_Edit_Relationship {
    */
   public static function formRule($submitValues, &$errors) {
     // check start and end date
-    foreach($submitValues['relationships'] as $key => $params) {
+    foreach ($submitValues['relationships'] as $key => $params) {
       if (empty($params['relationship_type_id'])) {
         continue;
       }

@@ -14,8 +14,6 @@ function relationshipfieldset_civicrm_config(&$config) {
 /**
  * Implements hook_civicrm_xmlMenu().
  *
- * @param array $files
- *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function relationshipfieldset_civicrm_xmlMenu(&$files) {
@@ -61,13 +59,6 @@ function relationshipfieldset_civicrm_disable() {
 /**
  * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function relationshipfieldset_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
@@ -91,8 +82,6 @@ function relationshipfieldset_civicrm_managed(&$entities) {
  *
  * Generate a list of case-types.
  *
- * @param array $caseTypes
- *
  * Note: This hook only runs in CiviCRM 4.4+.
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
@@ -112,7 +101,7 @@ function relationshipfieldset_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function relationshipfieldset_civicrm_angularModules(&$angularModules) {
-_relationshipfieldset_civix_civicrm_angularModules($angularModules);
+  _relationshipfieldset_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -133,8 +122,8 @@ function relationshipfieldset_civicrm_alterSettingsFolders(&$metaDataFolders = N
  */
 function relationshipfieldset_civicrm_buildForm($formName, &$form) {
   if ('CRM_Contact_Form_Contact' == $formName
-    && ($form ->_action & CRM_Core_Action::ADD)
-    && empty($form ->_addBlockName)
+    && ($form->_action & CRM_Core_Action::ADD)
+    && empty($form->_addBlockName)
   ) {
     CRM_Contact_Form_Edit_Relationship::buildQuickForm($form);
   }
@@ -148,7 +137,7 @@ function relationshipfieldset_civicrm_buildForm($formName, &$form) {
  */
 function relationshipfieldset_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   if ('CRM_Contact_Form_Contact' == $formName
-    && ($form ->_action & CRM_Core_Action::ADD)
+    && ($form->_action & CRM_Core_Action::ADD)
   ) {
     CRM_Contact_Form_Edit_Relationship::formRule($fields, $errors);
   }
@@ -157,11 +146,9 @@ function relationshipfieldset_civicrm_validateForm($formName, &$fields, &$files,
 /**
  * Implements hook_civicrm_postProcess().
  *
- * @param string $formName
- * @param CRM_Core_Form $form
  */
 function relationshipfieldset_civicrm_postProcess($formName, &$form) {
-  if ('CRM_Contact_Form_Contact' == $formName && ($form ->_action & CRM_Core_Action::ADD)) {
+  if ('CRM_Contact_Form_Contact' == $formName && ($form->_action & CRM_Core_Action::ADD)) {
     CRM_Contact_Form_Edit_Relationship::postProcess($form);
   }
 }
